@@ -3,11 +3,7 @@ import { reviews } from "../../db/schema.ts";
 import { type DrizzleContext, inArray } from "../../deps/deps.ts";
 import { sendMessage } from "../../deps/discordeno.ts";
 import type { AppContext } from "../../mod.ts";
-import {
-  bold,
-  hyperlink,
-  userMention,
-} from "../../sdk/discord/textFormatting.ts";
+import { hyperlink, userMention } from "../../sdk/discord/textFormatting.ts";
 import { isDraft } from "../../sdk/github/utils.ts";
 
 export default async function action(
@@ -61,11 +57,14 @@ export default async function action(
       const review = prReviews.find((review) =>
         review.pullRequestId === pr.id.toString()
       );
+      if (!review) {
+        continue;
+      }
       // <@123> está revisando [title](url)
       // **Ninguém** está revisando [title](url)
-      const line = `\n${
-        review ? userMention(review.reviewerDiscordId) : bold("Ninguém")
-      } está revisando ${hyperlink(pr.title, pr.html_url)}`;
+      const line = `\n${userMention(review.reviewerDiscordId)} está revisando ${
+        hyperlink(pr.title, pr.html_url)
+      }`;
       if (content.length + line.length > 4000) {
         break;
       }
