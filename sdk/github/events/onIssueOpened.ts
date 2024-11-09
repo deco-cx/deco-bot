@@ -2,7 +2,7 @@ import { STATUS_CODE } from "@std/http/status";
 import { sendMessage } from "../../../deps/discordeno.ts";
 import type { AppContext, Project } from "../../../mod.ts";
 import type { WebhookEvent } from "../../../sdk/github/types.ts";
-import { bold, timestamp } from "../../discord/textFormatting.ts";
+import { bold, hyperlink, timestamp } from "../../discord/textFormatting.ts";
 import { isDraft } from "../utils.ts";
 
 export default async function onIssueOpened(
@@ -22,15 +22,18 @@ export default async function onIssueOpened(
   );
   const channelId = project.discord.pr_channel_id;
 
+  const title = `${bold(sender.login)} abriu uma nova Issue`;
+  const link = hyperlink(
+    bold(`#${issue.number} - ${issue.title}`),
+    issue.html_url,
+  );
   await sendMessage(
     bot,
     channelId,
     {
-      content: `${
-        bold(`${sender.login} abriu uma nova Issue`)
-      }\n(${repository.full_name}) [${
-        bold(`#${issue.number} - ${issue.title}`)
-      }](<${issue.html_url}>) - ${timestamp(seconds, "R")}`,
+      content: `${title}\n(${repository.full_name}) ${link} - ${
+        timestamp(seconds, "R")
+      }`,
     },
   );
 

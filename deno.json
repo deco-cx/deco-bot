@@ -38,7 +38,10 @@
     "std/": "https://deno.land/std@0.204.0/",
     "https://esm.sh/*preact-render-to-string@6.3.1": "npm:preact-render-to-string@6.4.2",
     "@deco/deco": "jsr:@deco/deco@1.103.0",
-    "@deco/dev": "jsr:@deco/dev@1.107.0"
+    "@deco/dev": "jsr:@deco/dev@1.107.0",
+    "drizzle-orm": "https://esm.sh/drizzle-orm@0.30.10",
+    "drizzle-orm/": "https://esm.sh/drizzle-orm@0.30.10/",
+    "drizzle-kit": "https://esm.sh/drizzle-kit@0.21.2"
   },
   "tasks": {
     "check": "deno fmt && deno lint && deno check **/mod.ts",
@@ -52,7 +55,8 @@
     "update": "deno run -Ar https://deco.cx/update",
     "new": "deno run -A ./scripts/new.ts",
     "reload": "deno cache -r https://deco.cx/run",
-    "dev": "deno run -A --env --unstable-kv --unstable-hmr dev.ts"
+    "dev": "deno run -A --env --unstable-kv --unstable-hmr dev.ts",
+    "db:setup:deps": "deno cache -r --node-modules-dir npm:drizzle-orm@0.30.10 npm:drizzle-kit@0.21.2 npm:@libsql/client@0.6.0/node"
   },
   "githooks": {
     "pre-commit": "check"

@@ -27,3 +27,7 @@ type TimestampFormat = "t" | "T" | "d" | "D" | "f" | "F" | "R";
 export function timestamp(seconds: number, format: TimestampFormat = "f") {
   return `<t:${seconds}:${format}>`;
 }
+
+export function hyperlink(text: string, url: string) {
+  return `[${text}](${url})`;
+}

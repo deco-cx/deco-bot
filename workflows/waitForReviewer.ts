@@ -77,7 +77,7 @@ export default function workflow() {
       const { newReviewer, newReviewers } = yield ctx.callLocalActivity(() => {
         const newReviewer = getRandomItem(reviewers);
         const newReviewers = reviewers.filter((user) =>
-          user.githubUsername !== newReviewer.githubUsername
+          user.githubUsername !== newReviewer?.githubUsername
         );
         return { newReviewer, newReviewers };
       });

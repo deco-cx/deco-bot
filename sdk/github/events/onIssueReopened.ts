@@ -1,7 +1,7 @@
 import { STATUS_CODE } from "@std/http/status";
 import { sendMessage } from "../../../deps/discordeno.ts";
 import type { AppContext, Project } from "../../../mod.ts";
-import { bold, timestamp } from "../../discord/textFormatting.ts";
+import { bold, hyperlink, timestamp } from "../../discord/textFormatting.ts";
 import type { WebhookEvent } from "../types.ts";
 import { isDraft } from "../utils.ts";
 
@@ -24,15 +24,21 @@ export default async function onIssueReopened(
 
   const selfReopened = sender.login === issue.user?.login;
   const title = selfReopened
-    ? `${sender.login} re-abriu uma Issue`
-    : `${sender.login} re-abriu a issue de ${issue.user?.login || "alguém"}`;
+    ? `${bold(sender.login)} re-abriu uma Issue`
+    : `${bold(sender.login)} re-abriu a issue de ${
+      bold(issue.user?.login || "alguém")
+    }`;
+  const link = hyperlink(
+    bold(`#${issue.number} - ${issue.title}`),
+    issue.html_url,
+  );
   await sendMessage(
     bot,
     channelId,
     {
-      content: `${bold(title)}\n(${repository.full_name}) [${
-        bold(`#${issue.number} - ${issue.title}`)
-      }](<${issue.html_url}>) - ${timestamp(seconds, "R")}`,
+      content: `${title}\n(${repository.full_name}) ${link} - ${
+        timestamp(seconds, "R")
+      }`,
     },
   );
 

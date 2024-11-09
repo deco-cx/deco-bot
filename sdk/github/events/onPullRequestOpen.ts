@@ -1,5 +1,7 @@
 import { STATUS_CODE } from "@std/http/status";
 import type { WorkflowProps } from "apps/workflows/actions/start.ts";
+import { reviews, threads } from "../../../db/schema.ts";
+import type { DrizzleContext } from "../../../deps/deps.ts";
 import {
   sendMessage,
   snowflakeToBigint,
@@ -8,29 +10,31 @@ import {
 import type { AppContext, AppManifest, Project } from "../../../mod.ts";
 import type { WebhookEvent } from "../../../sdk/github/types.ts";
 import type { ProjectUser } from "../../../types.ts";
-import { bold, timestamp, userMention } from "../../discord/textFormatting.ts";
-import { setPullRequestThreadId } from "../../kv.ts";
+import {
+  bold,
+  hyperlink,
+  timestamp,
+  userMention,
+} from "../../discord/textFormatting.ts";
 import { getRandomItem } from "../../random.ts";
 import { isDraft } from "../utils.ts";
 
 export default async function onPullRequestOpen(
   props: WebhookEvent<"pull-request-opened" | "pull-request-edited">,
   project: Project,
-  ctx: AppContext,
+  ctx: AppContext & DrizzleContext,
 ) {
-  const bot = ctx.discord.bot;
-  const { pull_request, repository } = props;
-  if (isDraft(pull_request.title)) {
+  if (isDraft(props.pull_request.title)) {
     return new Response(null, { status: STATUS_CODE.NoContent });
   }
+
+  const { pull_request, repository } = props;
+  const bot = ctx.discord.bot;
+  const drizzle = await ctx.invoke.records.loaders.drizzle();
 
   const owner = pull_request.user;
   const reviewer = getRandomItem<ProjectUser | undefined>(
     project.users.filter((user) => user.githubUsername !== owner.login),
-  );
-  const reviewers = project.users.filter((user) =>
-    user.githubUsername !== owner.login &&
-    user.githubUsername !== reviewer?.githubUsername
   );
 
   const seconds = Math.floor(
@@ -38,15 +42,23 @@ export default async function onPullRequestOpen(
   );
   const channelId = project.discord.pr_channel_id;
 
+  const reviewerMention = reviewer
+    ? `${userMention(reviewer.discordId)} | `
+    : "";
+  const title = `${bold(owner.login)} abriu um novo PR`;
+  const link = hyperlink(
+    bold(`#${pull_request.number} - ${pull_request.title}`),
+    pull_request.html_url,
+  );
+
   const message = await sendMessage(
     bot,
     channelId,
     {
-      content: `${reviewer ? `${userMention(reviewer.discordId)} | ` : ""}${
-        bold(owner.login)
-      } abriu um novo PR\n(${repository.full_name}) [${
-        bold(`#${pull_request.number} - ${pull_request.title}`)
-      }](<${pull_request.html_url}>) - ${timestamp(seconds, "R")}`,
+      content:
+        `${reviewerMention}${title}\n(${repository.full_name}) ${link} - ${
+          timestamp(seconds, "R")
+        }`,
       allowedMentions: {
         users: reviewer ? [snowflakeToBigint(reviewer.discordId)] : [],
       },
@@ -60,24 +72,42 @@ export default async function onPullRequestOpen(
   });
 
   const threadId = thread.id.toString();
-  await setPullRequestThreadId(`${pull_request.id}`, threadId);
+  await drizzle.insert(threads).values({
+    id: threadId,
+    pullRequestId: pull_request.id.toString(),
+  });
 
-  if (reviewer && ctx.confirmPullRequestReview) {
-    const workflowProps: WorkflowProps<
-      "github-bot/workflows/waitForReviewer.ts",
-      AppManifest
-    > = {
-      key: "github-bot/workflows/waitForReviewer.ts",
-      id: `review-pr-${message.id}`,
-      props: {},
-      args: [{
-        channelId: threadId,
-        reviewer,
-        reviewers,
-      }],
-    };
+  if (reviewer) {
+    await drizzle.insert(reviews).values({
+      reviewerGithubUsername: reviewer.githubUsername,
+      reviewerDiscordId: reviewer.discordId,
+      pullRequestId: pull_request.id.toString(),
+      pullRequestUrl: pull_request.html_url,
+      type: "auto",
+    });
 
-    await ctx.invoke.workflows.actions.start(workflowProps);
+    if (ctx.confirmPullRequestReview) {
+      const reviewers = project.users.filter((user) =>
+        user.githubUsername !== owner.login &&
+        user.githubUsername !== reviewer?.githubUsername
+      );
+
+      const workflowProps: WorkflowProps<
+        "github-bot/workflows/waitForReviewer.ts",
+        AppManifest
+      > = {
+        key: "github-bot/workflows/waitForReviewer.ts",
+        id: `review-pr-${message.id}`,
+        props: {},
+        args: [{
+          channelId: threadId,
+          reviewer,
+          reviewers,
+        }],
+      };
+
+      await ctx.invoke.workflows.actions.start(workflowProps);
+    }
   }
 
   return new Response(null, { status: STATUS_CODE.NoContent });
