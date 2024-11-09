@@ -1,7 +1,7 @@
 import { STATUS_CODE } from "@std/http/status";
 import { sendMessage } from "../../../deps/discordeno.ts";
 import type { AppContext, Project } from "../../../mod.ts";
-import { bold, timestamp } from "../../discord/textFormatting.ts";
+import { bold, hyperlink, timestamp } from "../../discord/textFormatting.ts";
 import type { WebhookEvent } from "../types.ts";
 import { isDraft } from "../utils.ts";
 
@@ -24,16 +24,20 @@ export default async function onIssueClosed(
 
   const selfClosed = issue.user.login === sender.login;
   const title = selfClosed
-    ? `${sender.login} fechou a própria Issue`
-    : `${sender.login} fechou a issue de ${issue.user.login}`;
+    ? `${bold(sender.login)} fechou a própria Issue`
+    : `${bold(sender.login)} fechou a issue de ${bold(issue.user.login)}`;
 
+  const link = hyperlink(
+    bold(`#${issue.number} - ${issue.title}`),
+    issue.html_url,
+  );
   await sendMessage(
     bot,
     channelId,
     {
-      content: `${bold(title)}\n(${repository.full_name}) [${
-        bold(`#${issue.number} - ${issue.title}`)
-      }](<${issue.html_url}>) - ${timestamp(seconds, "R")}`,
+      content: `${title}\n(${repository.full_name}) ${link} - ${
+        timestamp(seconds, "R")
+      }`,
     },
   );
 

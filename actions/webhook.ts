@@ -1,4 +1,5 @@
 import { STATUS_CODE } from "@std/http/status";
+import { DrizzleContext } from "../deps/deps.ts";
 import type { AppContext } from "../mod.ts";
 import onIssueClosed from "../sdk/github/events/onIssueClosed.ts";
 import onIssueOpened from "../sdk/github/events/onIssueOpened.ts";
@@ -20,17 +21,8 @@ import { verify } from "../sdk/github/verifyWebhook.ts";
 export default async function action(
   props: WebhookEvent,
   req: Request,
-  ctx: AppContext,
+  ctx: AppContext & DrizzleContext,
 ) {
-  const signature = req.headers.get("x-hub-signature-256");
-
-  if (!signature) {
-    console.error("Signature is missing. Request Headers:", req.headers);
-    return new Response("Signature is missing", {
-      status: STATUS_CODE.Unauthorized,
-    });
-  }
-
   if (!("repository" in props) || !props.repository) {
     console.error("Repository is missing. Request Body:", props);
     return new Response("Repository is missing", {
@@ -68,14 +60,13 @@ export default async function action(
   }
 
   const secret = project.github.webhook_secret?.get();
-  // if (!secret) {
-  //   console.error("Secret is missing. Data:", { project, props });
-  //   return new Response("Secret is missing", {
-  //     status: STATUS_CODE.BadRequest,
-  //   });
-  // }
+  const signature = req.headers.get("x-hub-signature-256");
 
-  if (secret && !(await verify(secret, JSON.stringify(props), signature))) {
+  if (
+    secret &&
+    signature &&
+    !(await verify(secret, JSON.stringify(props), signature))
+  ) {
     console.error("Invalid signature. Data:", { project, props });
     return new Response("Invalid signature", {
       status: STATUS_CODE.Unauthorized,
