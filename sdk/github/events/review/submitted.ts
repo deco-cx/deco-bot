@@ -14,7 +14,7 @@ import _emojis from "../../../discord/emojis.ts";
 
 type ReviewState = "commented" | "changes_requested" | "approved";
 
-const titles: Record<ReviewState, string> = {
+const actions: Record<ReviewState, string> = {
   commented: "comentou no PR de",
   changes_requested: "pediu alterações no PR de",
   approved: "aprovou o PR de",
@@ -48,10 +48,6 @@ export default async function onReviewSubmitted(
     new Date(pull_request.created_at).getTime() / 1000,
   );
 
-  const state = review.state as ReviewState;
-  const title = titles[state];
-  const emoji = emojis[state];
-
   const threadId = await drizzle
     .select()
     .from(threads)
@@ -68,7 +64,11 @@ export default async function onReviewSubmitted(
   const ownerMention = ownerDiscordId
     ? ` ${userMention(ownerDiscordId)}`
     : owner.login;
-  const header = `${emoji} ${bold(sender.login)} ${title} ${ownerMention}`;
+
+  const state = review.state as ReviewState;
+  const action = actions[state];
+  const emoji = emojis[state];
+  const header = `${emoji} ${bold(sender.login)} ${action} ${ownerMention}`;
   const link = hyperlink(
     bold(`#${pull_request.number} - ${pull_request.title}`),
     pull_request.html_url,
