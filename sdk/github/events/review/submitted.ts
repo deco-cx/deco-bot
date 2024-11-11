@@ -3,14 +3,15 @@ import { reviews, threads } from "../../../../db/schema.ts";
 import { and, eq } from "../../../../deps/deps.ts";
 import { sendMessage, snowflakeToBigint } from "../../../../deps/discordeno.ts";
 import { AppContext, Project } from "../../../../mod.ts";
+import _emojis from "../../../discord/emojis.ts";
 import {
   bold,
   hyperlink,
   timestamp,
   userMention,
 } from "../../../discord/textFormatting.ts";
+import getUserByGithubUsername from "../../../user/getUserByGithubUsername.ts";
 import { WebhookEvent } from "../../types.ts";
-import _emojis from "../../../discord/emojis.ts";
 
 type ReviewState = "commented" | "changes_requested" | "approved";
 
@@ -40,9 +41,11 @@ export default async function onReviewSubmitted(
   }
 
   const drizzle = await ctx.invoke.records.loaders.drizzle();
-  const ownerDiscordId = project.users.find(
-    (user) => user.githubUsername === owner.login,
-  )?.discordId;
+  const ownerUser = await getUserByGithubUsername(
+    { username: owner.login },
+    ctx,
+  );
+  const ownerDiscordId = ownerUser?.discordId;
 
   const seconds = Math.floor(
     new Date(pull_request.created_at).getTime() / 1000,
@@ -63,7 +66,7 @@ export default async function onReviewSubmitted(
 
   const ownerMention = ownerDiscordId
     ? ` ${userMention(ownerDiscordId)}`
-    : owner.login;
+    : bold(owner.login);
 
   const state = review.state as ReviewState;
   const action = actions[state];
