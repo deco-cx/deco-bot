@@ -56,6 +56,8 @@ export default async function onReviewRequested(
 
   const requestedUserMention = requestedUser
     ? userMention(requestedUser.discordId)
+    : requested_reviewer?.login
+    ? bold(requested_reviewer.login)
     : "";
   const title = `${
     bold(sender.login)
