@@ -18,6 +18,7 @@ export default async function onPullRequestMerge(
   ctx: AppContext,
 ) {
   const bot = ctx.discord.bot;
+  const drizzle = await ctx.invoke.records.loaders.drizzle();
   const { pull_request, repository } = props;
 
   const owner = pull_request.user;
@@ -25,7 +26,11 @@ export default async function onPullRequestMerge(
 
   const theChosenOne = getRandomItem(project.users);
 
-  const threadId = await getPullRequestThreadId(`${pull_request.id}`);
+  const threadId = await drizzle
+    .select()
+    .from(threads)
+    .where(eq(threads.pullRequestId, `${pull_request.id}`))
+    .then(([thread]) => thread?.id);
   const channelId = threadId || project.discord.pr_channel_id;
 
   const title = mergedBy.login === owner.login
