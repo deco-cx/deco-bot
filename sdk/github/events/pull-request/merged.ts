@@ -7,8 +7,8 @@ import {
   snowflakeToBigint,
 } from "../../../../deps/discordeno.ts";
 import type { AppContext, Project } from "../../../../mod.ts";
+import emojis from "../../../discord/emojis.ts";
 import { bold, hyperlink } from "../../../discord/textFormatting.ts";
-import { getPullRequestThreadId } from "../../../kv.ts";
 import { getRandomItem } from "../../../random.ts";
 import type { WebhookEvent } from "../../types.ts";
 
@@ -43,7 +43,8 @@ export default async function onPullRequestMerge(
   );
 
   await sendMessage(bot, channelId, {
-    content: `${title}\n(${repository.full_name}) ${link}`,
+    content:
+      `${emojis.pullRequest.merged} ${title}\n(${repository.full_name}) ${link}`,
     allowedMentions: {
       users: theChosenOne ? [snowflakeToBigint(theChosenOne.discordId)] : [],
     },
@@ -53,7 +54,6 @@ export default async function onPullRequestMerge(
     await editChannel(bot, threadId, {
       archived: true,
     }).catch(console.error);
-    const drizzle = await ctx.invoke.records.loaders.drizzle();
     await drizzle.delete(threads).where(eq(threads.id, threadId));
   }
 

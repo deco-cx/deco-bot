@@ -8,6 +8,7 @@ import {
 } from "../../../../deps/discordeno.ts";
 import type { AppContext, AppManifest, Project } from "../../../../mod.ts";
 import type { ProjectUser } from "../../../../types.ts";
+import emojis from "../../../discord/emojis.ts";
 import {
   bold,
   hyperlink,
@@ -44,7 +45,9 @@ export default async function onPullRequestOpen(
   const reviewerMention = reviewer
     ? `${userMention(reviewer.discordId)} | `
     : "";
-  const title = `${bold(owner.login)} abriu um novo PR`;
+  const title = `${emojis.pullRequest.open} ${
+    bold(owner.login)
+  } abriu um novo PR`;
   const link = hyperlink(
     bold(`#${pull_request.number} - ${pull_request.title}`),
     pull_request.html_url,

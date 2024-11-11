@@ -10,6 +10,7 @@ import {
   userMention,
 } from "../../../discord/textFormatting.ts";
 import { WebhookEvent } from "../../types.ts";
+import _emojis from "../../../discord/emojis.ts";
 
 type ReviewState = "commented" | "changes_requested" | "approved";
 
@@ -17,6 +18,12 @@ const titles: Record<ReviewState, string> = {
   commented: "comentou no PR de",
   changes_requested: "pediu alterações no PR de",
   approved: "aprovou o PR de",
+};
+
+const emojis = {
+  commented: _emojis.pullRequest.comment,
+  changes_requested: _emojis.pullRequest.changesRequested,
+  approved: _emojis.pullRequest.approved,
 };
 
 export default async function onReviewSubmitted(
@@ -43,6 +50,7 @@ export default async function onReviewSubmitted(
 
   const state = review.state as ReviewState;
   const title = titles[state];
+  const emoji = emojis[state];
 
   const threadId = await drizzle
     .select()
@@ -60,7 +68,7 @@ export default async function onReviewSubmitted(
   const ownerMention = ownerDiscordId
     ? ` ${userMention(ownerDiscordId)}`
     : owner.login;
-  const header = `${bold(sender.login)} ${title} ${ownerMention}`;
+  const header = `${emoji} ${bold(sender.login)} ${title} ${ownerMention}`;
   const link = hyperlink(
     bold(`#${pull_request.number} - ${pull_request.title}`),
     pull_request.html_url,

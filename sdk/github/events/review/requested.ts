@@ -11,6 +11,7 @@ import {
 } from "../../../discord/textFormatting.ts";
 import getUserByGithubUsername from "../../../user/getUserByGithubUsername.ts";
 import { WebhookEvent } from "../../types.ts";
+import emojis from "../../../discord/emojis.ts";
 
 export default async function onReviewRequested(
   props: WebhookEvent<"pull-request-review-requested">,
@@ -59,7 +60,7 @@ export default async function onReviewRequested(
     : requested_reviewer?.login
     ? bold(requested_reviewer.login)
     : "";
-  const title = `${
+  const title = `${emojis.pullRequest.approved} ${
     bold(sender.login)
   } pediu para ${requestedUserMention} revisar um PR`;
   const link = hyperlink(

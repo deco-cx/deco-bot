@@ -1,8 +1,9 @@
 import { STATUS_CODE } from "@std/http/status";
 import { sendMessage } from "../../../../deps/discordeno.ts";
 import type { AppContext, Project } from "../../../../mod.ts";
-import type { WebhookEvent } from "../../types.ts";
+import emojis from "../../../discord/emojis.ts";
 import { bold, hyperlink, timestamp } from "../../../discord/textFormatting.ts";
+import type { WebhookEvent } from "../../types.ts";
 import { isDraft } from "../../utils.ts";
 
 export default async function onIssueOpened(
@@ -31,9 +32,10 @@ export default async function onIssueOpened(
     bot,
     channelId,
     {
-      content: `${title}\n(${repository.full_name}) ${link} - ${
-        timestamp(seconds, "R")
-      }`,
+      content:
+        `${emojis.issue.open} ${title}\n(${repository.full_name}) ${link} - ${
+          timestamp(seconds, "R")
+        }`,
     },
   );
 
