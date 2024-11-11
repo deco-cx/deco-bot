@@ -29,5 +29,5 @@ export function timestamp(seconds: number, format: TimestampFormat = "f") {
 }
 
 export function hyperlink(text: string, url: string) {
-  return `[${text}](${url})`;
+  return `[${text}](<${url}>)`;
 }
