@@ -45,7 +45,7 @@ export default async function action(
         ),
       );
 
-    let content = `# ${project.github.org_name}/${project.github.repo_name}`;
+    let content = "";
 
     let i = 0;
     while (true) {
@@ -60,8 +60,6 @@ export default async function action(
       if (!review) {
         continue;
       }
-      // <@123> está revisando [title](url)
-      // **Ninguém** está revisando [title](url)
       const line = `\n${userMention(review.reviewerDiscordId)} está revisando ${
         hyperlink(pr.title, pr.html_url)
       }`;
@@ -71,8 +69,13 @@ export default async function action(
       content += line;
     }
 
+    if (!content) {
+      continue;
+    }
+
     sendMessage(ctx.discord.bot, project.discord.summary_channel_id, {
-      content,
+      content:
+        `### ${project.github.org_name}/${project.github.repo_name}\n${content}`,
     });
   }
 }
