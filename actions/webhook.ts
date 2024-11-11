@@ -1,13 +1,14 @@
 import { STATUS_CODE } from "@std/http/status";
-import { DrizzleContext } from "../deps/deps.ts";
 import type { AppContext } from "../mod.ts";
-import onIssueClosed from "../sdk/github/events/onIssueClosed.ts";
-import onIssueOpened from "../sdk/github/events/onIssueOpened.ts";
-import onIssueReopened from "../sdk/github/events/onIssueReopened.ts";
-import onPullRequestMerge from "../sdk/github/events/onPullRequestMerge.ts";
-import onPullRequestOpen from "../sdk/github/events/onPullRequestOpen.ts";
-import onReviewRequested from "../sdk/github/events/onReviewRequested.ts";
-import onReviewSubmitted from "../sdk/github/events/onReviewSubmitted.ts";
+import {
+  handleIssueClose,
+  handleIssueOpen,
+  handleIssueReopened,
+  handlePullRequestMerge,
+  handlePullRequestOpen,
+  handleReviewRequested,
+  handleReviewSubmitted,
+} from "../sdk/github/events/index.ts";
 import type { WebhookEvent } from "../sdk/github/types.ts";
 import { wasInDraft } from "../sdk/github/utils.ts";
 import {
@@ -21,7 +22,7 @@ import { verify } from "../sdk/github/verifyWebhook.ts";
 export default async function action(
   props: WebhookEvent,
   req: Request,
-  ctx: AppContext & DrizzleContext,
+  ctx: AppContext,
 ) {
   const signature = req.headers.get("x-hub-signature-256");
 
@@ -82,15 +83,15 @@ export default async function action(
 
   if (isPullRequestEvent(eventName, props)) {
     if (props.action === "opened" || wasInDraft(props)) {
-      return onPullRequestOpen(props, project, ctx);
+      return handlePullRequestOpen(props, project, ctx);
     }
 
     if (props.action === "closed" && props.pull_request.merged) {
-      return onPullRequestMerge(props, project, ctx);
+      return handlePullRequestMerge(props, project, ctx);
     }
 
     if (props.action === "review_requested") {
-      return onReviewRequested(props, project, ctx);
+      return handleReviewRequested(props, project, ctx);
     }
 
     console.warn("Unhandled action. Data:", {
@@ -103,7 +104,7 @@ export default async function action(
 
   if (isPullRequestReviewEvent(eventName, props)) {
     if (props.action === "submitted") {
-      return onReviewSubmitted(props, project, ctx);
+      return handleReviewSubmitted(props, project, ctx);
     }
 
     console.warn("Unhandled action. Data:", {
@@ -116,15 +117,15 @@ export default async function action(
 
   if (isIssuesEvent(eventName, props)) {
     if (props.action === "opened") {
-      return onIssueOpened(props, project, ctx);
+      return handleIssueOpen(props, project, ctx);
     }
 
     if (props.action === "closed" && props.issue.state_reason === "completed") {
-      return onIssueClosed(props, project, ctx);
+      return handleIssueClose(props, project, ctx);
     }
 
     if (props.action === "reopened") {
-      return onIssueReopened(props, project, ctx);
+      return handleIssueReopened(props, project, ctx);
     }
 
     console.warn("Unhandled action. Data:", {

@@ -1,10 +1,9 @@
-import type { DrizzleContext } from "../deps/deps.ts";
 import type { AppContext } from "../mod.ts";
 
 export default async function loader(
   _props: unknown,
   _req: Request,
-  ctx: AppContext & DrizzleContext,
+  ctx: AppContext,
 ) {
   const drizzle = await ctx.invoke.records.loaders.drizzle();
   return {

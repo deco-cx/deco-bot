@@ -1,21 +1,21 @@
 import { STATUS_CODE } from "@std/http/status";
-import { reviews, threads } from "../../../db/schema.ts";
-import { and, type DrizzleContext, eq } from "../../../deps/deps.ts";
-import { sendMessage, snowflakeToBigint } from "../../../deps/discordeno.ts";
-import { AppContext, Project } from "../../../mod.ts";
-import { WebhookEvent } from "../../../sdk/github/types.ts";
+import { reviews, threads } from "../../../../db/schema.ts";
+import { and, eq } from "../../../../deps/deps.ts";
+import { sendMessage, snowflakeToBigint } from "../../../../deps/discordeno.ts";
+import { AppContext, Project } from "../../../../mod.ts";
 import {
   bold,
   hyperlink,
   timestamp,
   userMention,
-} from "../../discord/textFormatting.ts";
-import getUserByGithubUsername from "../../user/getUserByGithubUsername.ts";
+} from "../../../discord/textFormatting.ts";
+import getUserByGithubUsername from "../../../user/getUserByGithubUsername.ts";
+import { WebhookEvent } from "../../types.ts";
 
 export default async function onReviewRequested(
   props: WebhookEvent<"pull-request-review-requested">,
   project: Project,
-  ctx: AppContext & DrizzleContext,
+  ctx: AppContext,
 ) {
   const bot = ctx.discord.bot;
   const { pull_request, repository, requested_reviewer, sender } = props;

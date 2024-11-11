@@ -1,28 +1,27 @@
 import { STATUS_CODE } from "@std/http/status";
 import type { WorkflowProps } from "apps/workflows/actions/start.ts";
-import { reviews, threads } from "../../../db/schema.ts";
-import type { DrizzleContext } from "../../../deps/deps.ts";
+import { reviews, threads } from "../../../../db/schema.ts";
 import {
   sendMessage,
   snowflakeToBigint,
   startThreadWithMessage,
-} from "../../../deps/discordeno.ts";
-import type { AppContext, AppManifest, Project } from "../../../mod.ts";
-import type { WebhookEvent } from "../../../sdk/github/types.ts";
-import type { ProjectUser } from "../../../types.ts";
+} from "../../../../deps/discordeno.ts";
+import type { AppContext, AppManifest, Project } from "../../../../mod.ts";
+import type { ProjectUser } from "../../../../types.ts";
 import {
   bold,
   hyperlink,
   timestamp,
   userMention,
-} from "../../discord/textFormatting.ts";
-import { getRandomItem } from "../../random.ts";
-import { isDraft } from "../utils.ts";
+} from "../../../discord/textFormatting.ts";
+import { getRandomItem } from "../../../random.ts";
+import type { WebhookEvent } from "../../types.ts";
+import { isDraft } from "../../utils.ts";
 
 export default async function onPullRequestOpen(
   props: WebhookEvent<"pull-request-opened" | "pull-request-edited">,
   project: Project,
-  ctx: AppContext & DrizzleContext,
+  ctx: AppContext,
 ) {
   if (isDraft(props.pull_request.title)) {
     return new Response(null, { status: STATUS_CODE.NoContent });

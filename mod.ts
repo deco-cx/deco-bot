@@ -6,14 +6,14 @@ import type {
 } from "@deco/deco";
 import type { Secret } from "apps/website/loaders/secret.ts";
 import workflow from "apps/workflows/mod.ts";
-import { Octokit } from "./deps/deps.ts";
+import { type DrizzleContext, Octokit } from "./deps/deps.ts";
 import { Bot, createBot } from "./deps/discordeno.ts";
 import manifest, { type Manifest } from "./manifest.gen.ts";
 import { GithubClient } from "./sdk/github/client.ts";
 import type { ProjectUser } from "./types.ts";
 
 export type App = ReturnType<typeof GithubBot>;
-export type AppContext = AC<App>;
+export type AppContext = AC<App> & DrizzleContext;
 export type AppMiddlewareContext = AMC<App>;
 export type AppManifest = ManifestOf<App>;
 

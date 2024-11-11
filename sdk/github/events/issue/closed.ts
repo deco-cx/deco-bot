@@ -1,9 +1,9 @@
 import { STATUS_CODE } from "@std/http/status";
-import { sendMessage } from "../../../deps/discordeno.ts";
-import type { AppContext, Project } from "../../../mod.ts";
-import { bold, hyperlink, timestamp } from "../../discord/textFormatting.ts";
-import type { WebhookEvent } from "../types.ts";
-import { isDraft } from "../utils.ts";
+import { sendMessage } from "../../../../deps/discordeno.ts";
+import type { AppContext, Project } from "../../../../mod.ts";
+import { bold, hyperlink, timestamp } from "../../../discord/textFormatting.ts";
+import type { WebhookEvent } from "../../types.ts";
+import { isDraft } from "../../utils.ts";
 
 export default async function onIssueClosed(
   props: WebhookEvent<"issues-closed">,

@@ -1,21 +1,21 @@
 import { STATUS_CODE } from "@std/http";
-import { threads } from "../../../db/schema.ts";
-import { type DrizzleContext, eq } from "../../../deps/deps.ts";
+import { threads } from "../../../../db/schema.ts";
+import { eq } from "../../../../deps/deps.ts";
 import {
   editChannel,
   sendMessage,
   snowflakeToBigint,
-} from "../../../deps/discordeno.ts";
-import type { AppContext, Project } from "../../../mod.ts";
-import type { WebhookEvent } from "../../../sdk/github/types.ts";
-import { bold, hyperlink } from "../../discord/textFormatting.ts";
-import { getPullRequestThreadId } from "../../kv.ts";
-import { getRandomItem } from "../../random.ts";
+} from "../../../../deps/discordeno.ts";
+import type { AppContext, Project } from "../../../../mod.ts";
+import { bold, hyperlink } from "../../../discord/textFormatting.ts";
+import { getPullRequestThreadId } from "../../../kv.ts";
+import { getRandomItem } from "../../../random.ts";
+import type { WebhookEvent } from "../../types.ts";
 
 export default async function onPullRequestMerge(
   props: WebhookEvent<"pull-request-closed">,
   project: Project,
-  ctx: AppContext & DrizzleContext,
+  ctx: AppContext,
 ) {
   const bot = ctx.discord.bot;
   const { pull_request, repository } = props;

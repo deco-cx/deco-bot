@@ -1,15 +1,15 @@
 import { STATUS_CODE } from "@std/http/status";
-import { reviews, threads } from "../../../db/schema.ts";
-import { and, type DrizzleContext, eq } from "../../../deps/deps.ts";
-import { sendMessage, snowflakeToBigint } from "../../../deps/discordeno.ts";
-import { AppContext, Project } from "../../../mod.ts";
-import { WebhookEvent } from "../../../sdk/github/types.ts";
+import { reviews, threads } from "../../../../db/schema.ts";
+import { and, eq } from "../../../../deps/deps.ts";
+import { sendMessage, snowflakeToBigint } from "../../../../deps/discordeno.ts";
+import { AppContext, Project } from "../../../../mod.ts";
 import {
   bold,
   hyperlink,
   timestamp,
   userMention,
-} from "../../discord/textFormatting.ts";
+} from "../../../discord/textFormatting.ts";
+import { WebhookEvent } from "../../types.ts";
 
 type ReviewState = "commented" | "changes_requested" | "approved";
 
@@ -22,7 +22,7 @@ const titles: Record<ReviewState, string> = {
 export default async function onReviewSubmitted(
   props: WebhookEvent<"pull-request-review-submitted">,
   project: Project,
-  ctx: AppContext & DrizzleContext,
+  ctx: AppContext,
 ) {
   const bot = ctx.discord.bot;
   const { pull_request, repository, review, sender } = props;

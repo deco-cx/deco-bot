@@ -1,6 +1,6 @@
 import { STATUS_CODE } from "@std/http/status";
 import { reviews } from "../../db/schema.ts";
-import { type DrizzleContext, inArray } from "../../deps/deps.ts";
+import { inArray } from "../../deps/deps.ts";
 import { sendMessage } from "../../deps/discordeno.ts";
 import type { AppContext } from "../../mod.ts";
 import { hyperlink, userMention } from "../../sdk/discord/textFormatting.ts";
@@ -9,7 +9,7 @@ import { isDraft } from "../../sdk/github/utils.ts";
 export default async function action(
   _props: unknown,
   req: Request,
-  ctx: AppContext & DrizzleContext,
+  ctx: AppContext,
 ) {
   if (req.method !== "GET") {
     return new Response(null, { status: STATUS_CODE.MethodNotAllowed });

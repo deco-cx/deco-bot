@@ -1,12 +1,12 @@
 import { STATUS_CODE } from "@std/http/status";
-import { sendMessage } from "../../../deps/discordeno.ts";
-import type { AppContext, Project } from "../../../mod.ts";
-import { bold, hyperlink, timestamp } from "../../discord/textFormatting.ts";
-import type { WebhookEvent } from "../types.ts";
-import { isDraft } from "../utils.ts";
+import { sendMessage } from "../../../../deps/discordeno.ts";
+import type { AppContext, Project } from "../../../../mod.ts";
+import type { WebhookEvent } from "../../types.ts";
+import { bold, hyperlink, timestamp } from "../../../discord/textFormatting.ts";
+import { isDraft } from "../../utils.ts";
 
-export default async function onIssueReopened(
-  props: WebhookEvent<"issues-reopened">,
+export default async function onIssueOpened(
+  props: WebhookEvent<"issues-opened">,
   project: Project,
   ctx: AppContext,
 ) {
@@ -22,12 +22,7 @@ export default async function onIssueReopened(
   );
   const channelId = project.discord.pr_channel_id;
 
-  const selfReopened = sender.login === issue.user?.login;
-  const title = selfReopened
-    ? `${bold(sender.login)} re-abriu uma Issue`
-    : `${bold(sender.login)} re-abriu a issue de ${
-      bold(issue.user?.login || "alguém")
-    }`;
+  const title = `${bold(sender.login)} abriu uma nova Issue`;
   const link = hyperlink(
     bold(`#${issue.number} - ${issue.title}`),
     issue.html_url,
