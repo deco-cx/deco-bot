@@ -47,22 +47,19 @@ export default async function action(
 
     let content = "";
 
-    let i = 0;
-    while (true) {
-      const pr = openPullRequests[i];
-      if (!pr) {
-        break;
-      }
-      i++;
-      const review = prReviews.find((review) =>
+    for (const pr of openPullRequests) {
+      const reviews = prReviews.filter((review) =>
         review.pullRequestId === pr.id.toString()
       );
-      if (!review) {
+      if (!reviews.length) {
         continue;
       }
-      const line = `\n${userMention(review.reviewerDiscordId)} está revisando ${
-        hyperlink(pr.title, pr.html_url)
-      }`;
+      const mentions = reviews
+        .map((review) => userMention(review.reviewerDiscordId))
+        .join(", ");
+      const line = `\n${mentions} ${
+        reviews.length > 1 ? "estão" : "está"
+      } revisando ${hyperlink(pr.title, pr.html_url)}`;
       if (content.length + line.length > 4000) {
         break;
       }
